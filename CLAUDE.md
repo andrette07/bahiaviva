@@ -39,16 +39,15 @@ Pages takes ~1 min to publish. Ask Andrés before every deploy.
 - Extra photo crops in src/img (langosta, pulpo, tiburon, caballito, peces, captura, playa) are unused; add a card back only if asked.
 - Facts are sourced (footer of the page). Don't add numbers without a source.
 
-## Hosting plan
-- GitHub user: `andrette07`. Repo: `bahiaviva` (public), served by GitHub Pages from `site/` (or repo root).
-- Domain bought on GoDaddy (Andrés to confirm exact name; expected `bahiaviva.co`). `site/CNAME` must contain just the domain.
-- GoDaddy DNS: A @ → 185.199.108.153 / .109.153 / .110.153 / .111.153; CNAME www → andrette07.github.io; delete the default "Parked" A record.
-- After DNS resolves and the cert is issued: enable **Enforce HTTPS** in repo Settings → Pages.
+## Hosting (live since 2026-10-18)
+- https://bahiaviva.co — GitHub Pages, repo `andrette07/bahiaviva` (public), serving the `gh-pages` branch
+  (= contents of `site/`). Custom domain + Enforce HTTPS set; cert valid to 2027-01-16. www → 301 to apex.
+- GoDaddy DNS: A @ → 185.199.108/109/110/111.153; CNAME www → andrette07.github.io.
+- `gh` has two accounts on this machine; use `andrette07` for this repo (`gh auth switch --user andrette07`).
+- The permission classifier blocks pushes/deploys for Claude; Andrés runs them with the `!` prefix.
+- QR labels: `qr/etiquetas-qr-bahiaviva.co.pdf` (15 labels, self-check passed). Reprint only if an id changes.
 
 ## Pending
-1. Confirm domain → write site/CNAME → create repo, push, enable Pages (Settings → Pages → Deploy from branch).
-2. Verify https://<domain>/ and https://<domain>/#ballena open correctly on a phone-sized viewport.
-3. Run `python3 scripts/make_qr.py <domain>` → send the PDF to Andrés (replaces the earlier sheets, which pointed to a claude.ai link that requires login).
-4. Before Oct 28: students' WhatsApp voice notes (one per card, they say the card number first) → add as audio
+1. Before Oct 28: students' WhatsApp voice notes (one per card, they say the card number first) → add as audio
    (e.g. `src/audio/<id>.m4a`, play instead of speechSynthesis when present). Keep file size reasonable (convert to ~48 kbps mono AAC/MP3).
-5. Hotspot positions for corales/arrecife/pez globo are best guesses (colored stones = corals); adjust x/y if the sister corrects them.
+2. Hotspot positions for corales/arrecife/pez globo are best guesses (colored stones = corals); adjust x/y if the sister corrects them.
