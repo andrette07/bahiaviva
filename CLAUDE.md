@@ -24,6 +24,12 @@ site/               what gets deployed (index.html, .nojekyll, CNAME)
 Workflow: edit `src/stops.js` or `src/template.html` → `python3 scripts/build.py` → commit `site/` → deploy.
 Never hand-edit `site/index.html`.
 
+Deploy (GitHub Pages serves the `gh-pages` branch, which holds only the contents of `site/`):
+```
+git subtree push --prefix site origin gh-pages
+```
+Pages takes ~1 min to publish. Ask Andrés before every deploy.
+
 ## Content rules (keep)
 - Audience is 7–8 years old: short sentences, simple words, max ~4 facts per card.
 - Card ids are part of the QR URLs (`https://<domain>/#<id>`). **Renaming or removing an id breaks printed labels** — if you must, regenerate and reprint the QR sheet.
