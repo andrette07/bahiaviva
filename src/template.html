@@ -1,0 +1,383 @@
+<title>Bahía Viva</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Lexend:wght@400;500;600&display=swap">
+<style>
+/* Layout: a field guide to the class diorama — real photo as the map, numbered stops colored by zone, one card at a time */
+/* Palette follows the class's printed signs: navy lettering, sky-blue wave, green Zona 1 frame, orange-red Zona 2 frame */
+:root {
+  --bg: #f1f7fb;
+  --surface: #ffffff;
+  --ink: #1b2a5e;
+  --muted: #4c5d84;
+  --line: #d3e2ee;
+  --sea: #1b2a5e;
+  --sea-ink: #ffffff;
+  --wave: #5cc3ec;
+  --wave-soft: #c9ecfa;
+  --z1: #24793a;
+  --z1-soft: #e1f2e3;
+  --z2: #d9472a;
+  --z2-soft: #fde6df;
+  --an: #1b78c4;
+  --an-soft: #def0fb;
+  --sand: #f6efdc;
+  --shadow: 0 10px 30px rgba(14, 36, 51, .18);
+  --display: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --body: "Lexend", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a1822; --surface: #11283a; --ink: #e5eff4; --muted: #9db4c2; --line: #21405a;
+    --sea: #0c3d63; --sea-ink: #eaf4fa; --wave: #2a8fbf; --wave-soft: #10324a;
+    --z1: #5cc184; --z1-soft: #143526; --z2: #f07a64; --z2-soft: #3a1c17; --an: #6bb4ea; --an-soft: #132f47;
+    --sand: #2a2a22; --shadow: 0 10px 30px rgba(0,0,0,.5); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0a1822; --surface: #11283a; --ink: #e5eff4; --muted: #9db4c2; --line: #21405a;
+  --sea: #0c3d63; --sea-ink: #eaf4fa; --wave: #2a8fbf; --wave-soft: #10324a;
+  --z1: #5cc184; --z1-soft: #143526; --z2: #f07a64; --z2-soft: #3a1c17; --an: #6bb4ea; --an-soft: #132f47;
+  --sand: #2a2a22; --shadow: 0 10px 30px rgba(0,0,0,.5); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.55; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+header.top { background: var(--surface); color: var(--ink); border-bottom: 6px solid var(--wave); position: relative; }
+header.top .wrap { padding-block: 26px 22px; display: grid; gap: 8px; }
+h1 { font-family: var(--display); font-weight: 800; font-size: clamp(2rem, 6.4vw, 3.4rem); line-height: 1; margin: 0; text-wrap: balance; letter-spacing: .01em; text-transform: uppercase; }
+.ribbon { justify-self: start; background: var(--wave-soft); color: var(--ink); font: 700 clamp(1.05rem, 3.4vw, 1.4rem)/1.2 var(--display); text-transform: uppercase; letter-spacing: .04em; padding: 6px 18px 4px; border-radius: 999px; }
+.lede { margin: 6px 0 0; max-width: 60ch; color: var(--muted); }
+
+main { display: grid; gap: 40px; padding-block: 24px 48px; }
+h2 { font-family: var(--display); font-weight: 700; font-size: clamp(1.5rem, 3.6vw, 2rem); line-height: 1.1; margin: 0; text-wrap: balance; }
+
+.filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font: 500 .9rem var(--body); border: 2px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 6px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.chip .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--c, var(--muted)); }
+.chip[aria-pressed="true"] { border-color: var(--c, var(--ink)); background: var(--c-soft, var(--line)); }
+.chip:focus-visible, .stop:focus-visible, .btn:focus-visible, .item:focus-visible, .pledge label:focus-within { outline: 3px solid var(--an); outline-offset: 2px; }
+
+.mapbox { display: grid; gap: 10px; }
+.hint { color: var(--muted); font-size: .88rem; margin: 0; }
+.scroller { overflow-x: auto; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); -webkit-overflow-scrolling: touch; }
+.map { position: relative; min-width: 760px; }
+.map img { display: block; width: 100%; height: auto; max-width: none; }
+.stop { position: absolute; transform: translate(-50%, -50%); width: 34px; height: 34px; border-radius: 50%; border: 3px solid #fff; background: var(--c); color: #fff; font: 800 1rem/1 var(--display); display: grid; place-items: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.45); padding: 0; transition: transform .15s ease, opacity .2s ease; }
+.stop::after { content: ""; position: absolute; inset: -7px; border-radius: 50%; border: 2px solid var(--c); opacity: .8; animation: pulse 2.4s ease-out infinite; }
+.stop:hover { transform: translate(-50%, -50%) scale(1.12); }
+.stop.dim { opacity: .18; pointer-events: none; }
+@keyframes pulse { 0% { transform: scale(.8); opacity: .8; } 100% { transform: scale(1.5); opacity: 0; } }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.item { display: grid; grid-template-columns: 78px 1fr; gap: 12px; align-items: center; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px; cursor: pointer; color: var(--ink); font: inherit; }
+.item img { width: 78px; height: 78px; object-fit: cover; border-radius: 10px; }
+.item .meta { min-width: 0; display: grid; gap: 2px; }
+.item .t { font-family: var(--display); font-weight: 700; font-size: 1.12rem; line-height: 1.15; }
+.item .s { color: var(--muted); font-size: .86rem; line-height: 1.35; }
+.tag { display: inline-flex; align-items: center; gap: 6px; font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--c); }
+.tag b { width: 20px; height: 20px; border-radius: 50%; background: var(--c); color: #fff; display: grid; place-items: center; font: 800 .75rem/1 var(--display); letter-spacing: 0; }
+.item[hidden] { display: none; }
+
+.section-head { display: grid; gap: 6px; }
+.section-head p { margin: 0; color: var(--muted); max-width: 62ch; }
+
+.pledge { background: var(--sand); border-radius: 18px; padding: 22px; display: grid; gap: 16px; }
+.pledge ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.pledge label { display: flex; gap: 12px; align-items: flex-start; background: var(--surface); border: 2px solid var(--line); border-radius: 12px; padding: 12px 14px; cursor: pointer; }
+.pledge input { width: 22px; height: 22px; margin: 2px 0 0; accent-color: var(--z1); flex: none; }
+.pledge input:checked + span { font-weight: 600; }
+.pledge label:has(input:checked) { border-color: var(--z1); background: var(--z1-soft); }
+.meter { display: flex; align-items: center; gap: 12px; font-weight: 600; }
+.bar { flex: 1; height: 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); overflow: hidden; max-width: 320px; }
+.bar i { display: block; height: 100%; width: 0; background: var(--z1); transition: width .3s ease; }
+
+footer { border-top: 1px solid var(--line); }
+footer .wrap { padding-block: 22px 36px; color: var(--muted); font-size: .82rem; display: grid; gap: 8px; }
+footer ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+footer a { color: var(--an); overflow-wrap: anywhere; }
+
+/* card sheet */
+.overlay { position: fixed; inset: 0; background: rgba(5, 18, 28, .55); z-index: 20; display: grid; align-items: end; justify-items: center; }
+.overlay[hidden] { display: none !important; }
+.sheet { background: var(--surface); color: var(--ink); width: 100%; max-width: 620px; max-height: 92vh; overflow-y: auto; border-radius: 22px 22px 0 0; box-shadow: var(--shadow); padding-bottom: env(safe-area-inset-bottom, 0px); }
+@media (min-width: 700px) { .overlay { align-items: center; } .sheet { border-radius: 22px; max-height: 88vh; } }
+.sheet .photo { position: relative; }
+.sheet .photo img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; display: block; border-radius: 22px 22px 0 0; max-width: 100%; }
+.close { position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(5, 18, 28, .65); color: #fff; font-size: 1.4rem; line-height: 1; cursor: pointer; }
+.sheet .body { padding: 18px 22px 22px; display: grid; gap: 14px; }
+.sheet h3 { font-family: var(--display); font-weight: 800; font-size: clamp(1.7rem, 5vw, 2.2rem); line-height: 1.05; margin: 0; text-wrap: balance; }
+.sheet .short { margin: -6px 0 0; color: var(--muted); font-size: 1.02rem; }
+.sheet h4 { margin: 0; font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.facts { margin: 0; padding-left: 22px; display: grid; gap: 10px; font-size: 1.1rem; }
+.care { background: var(--c-soft); border-left: 5px solid var(--c); border-radius: 10px; padding: 12px 14px; display: grid; gap: 4px; }
+.care p { margin: 0; font-size: 1.05rem; font-weight: 500; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.btn { font: 600 .95rem var(--body); border-radius: 12px; padding: 10px 16px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.btn.primary { background: var(--sea); color: var(--sea-ink); border-color: var(--sea); }
+.btn.speaking { background: var(--z2); border-color: var(--z2); color: #fff; }
+.controls .spacer { flex: 1; }
+
+@media (prefers-reduced-motion: reduce) { .stop::after { animation: none; } .stop, .bar i { transition: none; } }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <h1>Bahía del Pacífico Colombiano</h1>
+    <span class="ribbon">Cuidemos la vida marina</span>
+    <p class="lede">Toca un número en la foto de la maqueta para conocer a los animales y lo que pasa en cada zona.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="mapbox" aria-labelledby="mapa-t">
+    <h2 id="mapa-t" class="sr-only" hidden>Mapa de la maqueta</h2>
+    <div class="filters" role="group" aria-label="Mostrar">
+      <button class="chip" id="f-all" data-f="all" aria-pressed="true">Todo</button>
+      <button class="chip" id="f-z1" data-f="z1" aria-pressed="false" style="--c: var(--z1); --c-soft: var(--z1-soft)"><span class="dot"></span>Zona 1: Convivencia sostenible</button>
+      <button class="chip" id="f-an" data-f="an" aria-pressed="false" style="--c: var(--an); --c-soft: var(--an-soft)"><span class="dot"></span>Animales</button>
+      <button class="chip" id="f-z2" data-f="z2" aria-pressed="false" style="--c: var(--z2); --c-soft: var(--z2-soft)"><span class="dot"></span>Zona 2: Prácticas dañinas</button>
+    </div>
+    <div class="scroller">
+      <div class="map" id="map">
+        <img src="{{IMG:maqueta}}" alt="Foto de la maqueta de la bahía: a la izquierda el manglar y el pescador artesanal, en el centro las ballenas y la lancha de turismo, a la derecha el barco industrial, el manglar seco y la basura.">
+      </div>
+    </div>
+    <p class="hint">En el celular puedes deslizar la foto hacia los lados.</p>
+  </section>
+
+  <section aria-labelledby="todo-t" style="display:grid;gap:16px">
+    <div class="section-head">
+      <h2 id="todo-t">Recorrido por la bahía</h2>
+      <p>Primero la zona que cuida la bahía y sus animales, y al final la zona que le hace daño.</p>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="pledge" aria-labelledby="promesa-t">
+    <div class="section-head">
+      <h2 id="promesa-t">¿Qué podemos hacer?</h2>
+      <p>Marca lo que tú te comprometes a hacer para cuidar la bahía.</p>
+    </div>
+    <ul id="pledges"></ul>
+    <div class="meter"><span id="count">0 de 6</span><div class="bar" aria-hidden="true"><i id="bar"></i></div></div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <strong>Fuentes</strong>
+    <ul>
+      <li><a href="https://radionacional.co/noticias-colombia/ballenas-jorobadas-por-que-llegan-al-pacifico-colombiano" target="_blank" rel="noopener">Radio Nacional de Colombia: ¿Por qué llegan las ballenas jorobadas al Pacífico colombiano?</a></li>
+      <li><a href="https://www.agronegocios.co/agricultura/las-malas-practicas-de-avistamiento-ponen-en-riesgo-a-las-ballenas-y-los-turistas-en-el-pacifico-colombiano-2902358" target="_blank" rel="noopener">Agronegocios: Las malas prácticas de avistamiento ponen en riesgo a las ballenas</a></li>
+      <li><a href="https://www.corresponsables.com/col/actualidad/estas-son-las-nuevas-regulaciones-para-ver-ballenas-jorobadas-en-colombia-el-gobierno-asegura-que-busca-un-avistamiento-sostenible/" target="_blank" rel="noopener">Corresponsables: Regulaciones para ver ballenas jorobadas en Colombia</a></li>
+      <li><a href="https://www.fao.org/fileadmin/user_upload/rebyc-2015/documents/InterannualAssessmentOfIndustrialShrimpTrawlFisheriesImpactOnMarineBiodiversityOfColombia.pdf" target="_blank" rel="noopener">FAO / INVEMAR: Impacto de la pesca industrial de arrastre de camarón en Colombia</a></li>
+      <li><a href="https://www.minambiente.gov.co/asuntos-marinos-costeros-y-recursos-acuaticos/arrecifes-coralinos/" target="_blank" rel="noopener">Ministerio de Ambiente: Arrecifes coralinos</a></li>
+    </ul>
+  </div>
+</footer>
+
+<div class="overlay" id="overlay" hidden>
+  <article class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="s-title">
+    <div class="photo">
+      <img id="s-img" src="" alt="">
+      <button class="close" id="s-close" aria-label="Cerrar">×</button>
+    </div>
+    <div class="body">
+      <span class="tag" id="s-tag"><b id="s-num"></b><span id="s-zone"></span></span>
+      <h3 id="s-title"></h3>
+      <p class="short" id="s-short"></p>
+      <h4>¿Sabías que…?</h4>
+      <ul class="facts" id="s-facts"></ul>
+      <div class="care"><h4>¿Cómo lo cuidamos?</h4><p id="s-care"></p></div>
+      <div class="controls">
+        <button class="btn primary" id="s-say">🔊 Escuchar</button>
+        <span class="spacer"></span>
+        <button class="btn" id="s-prev">← Anterior</button>
+        <button class="btn" id="s-next">Siguiente →</button>
+      </div>
+    </div>
+  </article>
+</div>
+
+<script>
+const ZONES = {
+  z1: { label: 'Zona 1 · Convivencia sostenible', c: '--z1', soft: '--z1-soft' },
+  an: { label: 'Animal de la bahía', c: '--an', soft: '--an-soft' },
+  z2: { label: 'Zona 2 · Práctica dañina', c: '--z2', soft: '--z2-soft' }
+};
+const IMG = {{IMGMAP}};
+const STOPS = [
+  { id: 'zona1', z: 'z1', title: 'Zona 1: Convivencia sostenible', short: 'Aquí cuidamos la bahía.',
+    facts: ['Pescamos de forma artesanal y responsable.', 'Cuidamos los manglares.', 'Respetamos la vida marina.'],
+    care: 'Si todos cuidamos la bahía, los animales pueden vivir tranquilos.' },
+  { id: 'pescador', z: 'z1', x: 10.5, y: 50, title: 'Pesca artesanal', short: 'Pescar solo lo que necesitamos.',
+    facts: ['El pescador va en una canoa pequeña llamada potrillo.',
+            'Usa una red redonda llamada atarraya.',
+            'Saca solo los peces que necesita y deja crecer a los pequeños.'],
+    care: 'Comprarles el pescado a los pescadores de la región.' },
+  { id: 'manglar', z: 'z1', x: 5, y: 30, title: 'El manglar', short: 'La casa de los bebés del mar.',
+    facts: ['El manglar es un bosque que vive entre el río y el mar.',
+            'Entre sus raíces crecen peces, cangrejos y pianguas bebés.',
+            'Protege la playa de las olas fuertes.'],
+    care: 'No cortar los manglares y no botar basura.' },
+  { id: 'conchas', z: 'an', x: 3, y: 58, title: 'Las conchas de mar', short: 'La casa de muchos animalitos.',
+    facts: ['Las conchas son la casa de animales como los caracoles y las almejas.',
+            'Cuando una concha queda vacía, el cangrejo ermitaño la usa como casa.',
+            'En el manglar vive la piangua, una concha que recogen las familias del Pacífico.'],
+    care: 'Dejar las conchas en la playa, porque son la casa de otros animales.' },
+  { id: 'corales', z: 'an', x: 6.5, y: 71, title: 'Los corales', short: 'Parecen piedras, ¡pero son animales!',
+    facts: ['Los corales parecen piedras o plantas, pero son animales.',
+            'Son muy pequeñitos y viven juntos, por miles.',
+            'Si el agua se calienta o se ensucia, los corales se ponen blancos y pueden morir.'],
+    care: 'No tocar ni pisar los corales, y no botar basura al mar.' },
+  { id: 'arrecife', z: 'an', x: 24, y: 46, title: 'El arrecife de coral', short: 'Una ciudad debajo del agua.',
+    facts: ['Un arrecife es como una ciudad que construyen los corales debajo del agua.',
+            'Allí viven, comen y se esconden muchísimos animales del mar.',
+            'Protege la playa de las olas.',
+            'En el Pacífico colombiano hay arrecifes en Gorgona, Malpelo y Utría.'],
+    care: 'Mirar sin tocar y nunca llevarnos pedazos de coral.' },
+  { id: 'pezglobo', z: 'an', x: 55.5, y: 75, title: 'El pez globo', short: 'Se infla como una pelota.',
+    facts: ['Cuando tiene miedo, se infla como una pelota.',
+            'Tiene veneno, por eso no se come.'],
+    care: 'Mirarlo sin tocarlo.' },
+  { id: 'delfin', z: 'an', x: 38, y: 40, title: 'Los delfines', short: 'Encuentran su comida con sonidos.',
+    facts: ['Respiran aire, como nosotros.', 'Hacen sonidos para encontrar su comida.', 'Viven en familia.'],
+    care: 'Mirarlos de lejos y no darles comida.' },
+  { id: 'ballena', z: 'an', x: 36, y: 89, title: 'La ballena jorobada', short: 'Viaja muy lejos para tener a su bebé.',
+    facts: ['Viaja desde muy lejos, cerca de la Antártida.',
+            'Llega a Colombia de julio a octubre para tener a su bebé.',
+            'Cada año llegan unas 3.000 ballenas.',
+            'Los machos cantan debajo del agua.'],
+    care: 'Verlas desde lejos: a más de 200 metros.' },
+  { id: 'zona2', z: 'z2', title: 'Zona 2: Prácticas dañinas', short: 'Aquí le hacemos daño a la bahía.',
+    facts: ['Pesca industrial con red de arrastre.',
+            'Basura en el mar.',
+            'Lanchas que se acercan mucho a las ballenas.',
+            'Daño a los manglares.'],
+    care: 'Todos juntos podemos cambiar esto.' },
+  { id: 'barco', z: 'z2', x: 57, y: 30, title: 'Pesca industrial', short: 'Una red gigante que arrastra todo.',
+    facts: ['El barco usa una red gigante que arrastra todo por el fondo del mar.',
+            'La red atrapa animales que nadie quería pescar.',
+            'Por cada kilo de camarón pueden salir hasta 40 kilos de otros animales.'],
+    care: 'Apoyar la pesca artesanal.' },
+  { id: 'lancha', z: 'z2', x: 43, y: 72, title: 'Turismo muy cerca', short: 'Las lanchas asustan a las ballenas.',
+    facts: ['Si la lancha se acerca mucho, puede golpear o asustar a las ballenas.',
+            'La regla es quedarse a más de 200 metros.',
+            'Hay que ir despacio y sin hacer ruido.'],
+    care: 'Respetar la distancia y nunca nadar con las ballenas.' },
+  { id: 'manglar_danado', z: 'z2', x: 69, y: 33, title: 'Daño a los manglares', short: 'Un bosque que se seca.',
+    facts: ['Cuando cortan el manglar, los peces y los cangrejos pierden su casa.',
+            'Sin manglar, las olas dañan la playa.'],
+    care: 'Sembrar mangle y cuidar el que ya existe.' },
+  { id: 'basura', z: 'z2', x: 78, y: 86, title: 'Basura en el mar', short: 'El plástico dura cientos de años.',
+    facts: ['Las botellas y bolsas de plástico duran cientos de años.',
+            'Las tortugas creen que las bolsas son comida.',
+            'Los peces se comen pedacitos de plástico.'],
+    care: 'Usar menos plástico y nunca botar basura al mar.' }
+];
+const PLEDGES = ['Uso menos plástico y reciclo.', 'Nunca boto basura al mar ni a los ríos.', 'Prefiero el pescado de los pescadores artesanales.',
+  'Veo las ballenas desde lejos, a más de 200 metros.', 'Cuido los manglares y ayudo a sembrarlos.', 'Le cuento a mi familia lo que aprendí.'];
+
+const $ = (s) => document.querySelector(s);
+const map = $('#map'), grid = $('#grid');
+STOPS.forEach((s, i) => { s.n = i + 1; });
+const cvar = (z) => `--c: var(${ZONES[z].c}); --c-soft: var(${ZONES[z].soft})`;
+
+STOPS.forEach((s, i) => {
+  if (s.x != null) {
+    const b = document.createElement('button');
+    b.className = 'stop'; b.style.cssText = `left:${s.x}%;top:${s.y}%;${cvar(s.z)}`;
+    b.textContent = s.n; b.dataset.z = s.z; b.setAttribute('aria-label', `${s.n}. ${s.title}`);
+    b.addEventListener('click', () => open(i));
+    map.appendChild(b);
+  }
+  const it = document.createElement('button');
+  it.className = 'item'; it.dataset.z = s.z; it.style.cssText = cvar(s.z);
+  it.innerHTML = `<img src="${IMG[s.id]}" alt=""><span class="meta"><span class="tag"><b>${s.n}</b>${s.z === 'an' ? 'Animal' : s.z === 'z1' ? 'Zona 1' : 'Zona 2'}</span><span class="t">${s.title}</span><span class="s">${s.short}</span></span>`;
+  it.addEventListener('click', () => open(i));
+  grid.appendChild(it);
+});
+
+document.querySelectorAll('.chip').forEach((c) => c.addEventListener('click', () => {
+  const f = c.dataset.f;
+  document.querySelectorAll('.chip').forEach((o) => o.setAttribute('aria-pressed', String(o === c)));
+  document.querySelectorAll('.stop').forEach((s) => s.classList.toggle('dim', f !== 'all' && s.dataset.z !== f));
+  document.querySelectorAll('.item').forEach((s) => { s.hidden = f !== 'all' && s.dataset.z !== f; });
+}));
+
+// card sheet
+const overlay = $('#overlay'), sheet = $('#sheet');
+let cur = 0, lastFocus = null;
+function render() {
+  const s = STOPS[cur];
+  sheet.style.cssText = cvar(s.z);
+  $('#s-img').src = IMG[s.id]; $('#s-img').alt = 'Foto de la maqueta: ' + s.title;
+  $('#s-num').textContent = s.n; $('#s-zone').textContent = ZONES[s.z].label;
+  $('#s-title').textContent = s.title; $('#s-short').textContent = s.short;
+  $('#s-facts').innerHTML = s.facts.map((f) => `<li>${f}</li>`).join('');
+  $('#s-care').textContent = s.care;
+  $('#s-prev').disabled = cur === 0; $('#s-next').disabled = cur === STOPS.length - 1;
+  sheet.scrollTop = 0;
+}
+function open(i) { stopSpeech(); lastFocus = document.activeElement; cur = i; render(); overlay.hidden = false; $('#s-close').focus(); }
+function close() { stopSpeech(); overlay.hidden = true; if (lastFocus) lastFocus.focus(); }
+$('#s-close').addEventListener('click', close);
+overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+document.addEventListener('keydown', (e) => {
+  if (overlay.hidden) return;
+  if (e.key === 'Escape') close();
+  if (e.key === 'ArrowRight' && cur < STOPS.length - 1) { stopSpeech(); cur++; render(); }
+  if (e.key === 'ArrowLeft' && cur > 0) { stopSpeech(); cur--; render(); }
+});
+$('#s-prev').addEventListener('click', () => { stopSpeech(); cur--; render(); });
+$('#s-next').addEventListener('click', () => { stopSpeech(); cur++; render(); });
+
+// read aloud in Spanish (placeholder until the students record their own voices)
+const synth = window.speechSynthesis;
+const sayBtn = $('#s-say');
+let voice = null;
+function pickVoice() {
+  if (!synth) return;
+  const vs = synth.getVoices();
+  voice = vs.find((v) => /^es[-_]CO/i.test(v.lang)) || vs.find((v) => /^es[-_](US|MX|419)/i.test(v.lang)) || vs.find((v) => /^es/i.test(v.lang)) || null;
+}
+if (synth) { pickVoice(); synth.onvoiceschanged = pickVoice; } else { sayBtn.hidden = true; }
+function stopSpeech() { try { synth && synth.cancel(); } catch (e) {} sayBtn.classList.remove('speaking'); sayBtn.textContent = '🔊 Escuchar'; }
+sayBtn.addEventListener('click', () => {
+  if (!synth) return;
+  if (sayBtn.classList.contains('speaking')) { stopSpeech(); return; }
+  const s = STOPS[cur];
+  const text = `${s.title}. ${s.short} ¿Sabías que? ${s.facts.join(' ')} ¿Cómo lo cuidamos? ${s.care}`;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = voice ? voice.lang : 'es-CO'; if (voice) u.voice = voice; u.rate = 0.95;
+  u.onend = u.onerror = () => { sayBtn.classList.remove('speaking'); sayBtn.textContent = '🔊 Escuchar'; };
+  synth.cancel(); synth.speak(u);
+  sayBtn.classList.add('speaking'); sayBtn.textContent = '■ Detener';
+});
+
+// pledges
+const pl = $('#pledges');
+PLEDGES.forEach((p, i) => {
+  const li = document.createElement('li');
+  li.innerHTML = `<label><input type="checkbox" id="p${i}"><span>${p}</span></label>`;
+  pl.appendChild(li);
+});
+function updateCount() {
+  const n = pl.querySelectorAll('input:checked').length;
+  $('#count').textContent = `${n} de ${PLEDGES.length}`;
+  $('#bar').style.width = (n / PLEDGES.length * 100) + '%';
+}
+pl.addEventListener('change', updateCount);
+
+// QR labels link to #id: open that card straight away
+function openFromHash() {
+  const id = (location.hash || '').slice(1);
+  const i = STOPS.findIndex((s) => s.id === id);
+  if (i >= 0) open(i);
+}
+openFromHash();
+window.addEventListener('hashchange', openFromHash);
+</script>

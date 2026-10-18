@@ -1,0 +1,48 @@
+# Bahía Viva — school project app
+
+A one-page, phone-first web app in **Spanish** for a **2nd-grade** class project in Colombia: a diorama
+("maqueta") of a Colombian Pacific bay titled *Bahía del Pacífico Colombiano — Cuidemos la vida marina*.
+Kids tap numbered spots on a photo of their diorama (or scan QR labels stuck next to each animal/sign)
+to open a card with a photo, 2–4 short facts, a "¿Cómo lo cuidamos?" line, and a read-aloud button.
+
+Owner: Andrés (uncle). His sister (Spanish only) and the students use it. Talk to Andrés in English;
+everything user-facing in the app stays in Spanish.
+
+## Dates
+- **Mon Oct 19, 2026** — classroom exhibition: demo runs from the standalone HTML file on an Android phone (already sent).
+- **Wed Oct 28, 2026** — presentation to the whole school: needs the public domain + QR labels.
+
+## Layout
+```
+src/template.html   page markup, CSS tokens, JS (body fragment; STOPS array is replaced at build)
+src/stops.js        THE CONTENT — one object per card (id, zone, hotspot x/y %, title, short, facts, care)
+src/img/*.jpg       card photos cropped from the family's own diorama photos; maqueta.jpg = map photo
+scripts/build.py    -> site/index.html (single self-contained file, images inlined as data URIs)
+scripts/make_qr.py  -> qr/etiquetas-qr-<domain>.pdf (Letter, 3x4 labels) + decode self-check
+site/               what gets deployed (index.html, .nojekyll, CNAME)
+```
+Workflow: edit `src/stops.js` or `src/template.html` → `python3 scripts/build.py` → commit `site/` → deploy.
+Never hand-edit `site/index.html`.
+
+## Content rules (keep)
+- Audience is 7–8 years old: short sentences, simple words, max ~4 facts per card.
+- Card ids are part of the QR URLs (`https://<domain>/#<id>`). **Renaming or removing an id breaks printed labels** — if you must, regenerate and reprint the QR sheet.
+- Zones follow the class's printed signs: green = Zona 1 *Convivencia sostenible* (artisanal fishing good),
+  red = Zona 2 *Prácticas dañinas* (industrial trawling, trash, boats too close to whales, mangrove damage), blue = animals.
+- Card list follows the sister's list: ballena jorobada, delfines, conchas, corales, arrecife, pez globo, plus zone cards.
+- Extra photo crops in src/img (langosta, pulpo, tiburon, caballito, peces, captura, playa) are unused; add a card back only if asked.
+- Facts are sourced (footer of the page). Don't add numbers without a source.
+
+## Hosting plan
+- GitHub user: `andrette07`. Repo: `bahiaviva` (public), served by GitHub Pages from `site/` (or repo root).
+- Domain bought on GoDaddy (Andrés to confirm exact name; expected `bahiaviva.co`). `site/CNAME` must contain just the domain.
+- GoDaddy DNS: A @ → 185.199.108.153 / .109.153 / .110.153 / .111.153; CNAME www → andrette07.github.io; delete the default "Parked" A record.
+- After DNS resolves and the cert is issued: enable **Enforce HTTPS** in repo Settings → Pages.
+
+## Pending
+1. Confirm domain → write site/CNAME → create repo, push, enable Pages (Settings → Pages → Deploy from branch).
+2. Verify https://<domain>/ and https://<domain>/#ballena open correctly on a phone-sized viewport.
+3. Run `python3 scripts/make_qr.py <domain>` → send the PDF to Andrés (replaces the earlier sheets, which pointed to a claude.ai link that requires login).
+4. Before Oct 28: students' WhatsApp voice notes (one per card, they say the card number first) → add as audio
+   (e.g. `src/audio/<id>.m4a`, play instead of speechSynthesis when present). Keep file size reasonable (convert to ~48 kbps mono AAC/MP3).
+5. Hotspot positions for corales/arrecife/pez globo are best guesses (colored stones = corals); adjust x/y if the sister corrects them.
