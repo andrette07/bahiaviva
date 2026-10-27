@@ -17,9 +17,10 @@ everything user-facing in the app stays in Spanish.
 src/template.html   page markup, CSS tokens, JS (body fragment; STOPS array is replaced at build)
 src/stops.js        THE CONTENT — one object per card (id, zone, hotspot x/y %, title, short, facts, care)
 src/img/*.jpg       card photos cropped from the family's own diorama photos; maqueta.jpg = map photo
+src/audio/<id>.mp3  students' recordings (mono 40 kbps MP3 from the WhatsApp .ogg); inicio.mp3 = home welcome
 scripts/build.py    -> site/index.html (single self-contained file, images inlined as data URIs)
 scripts/make_qr.py  -> qr/etiquetas-qr-<domain>.pdf (Letter, 3x4 labels) + decode self-check
-site/               what gets deployed (index.html, .nojekyll, CNAME)
+site/               what gets deployed (index.html, audio/*.mp3, .nojekyll, CNAME)
 ```
 Workflow: edit `src/stops.js` or `src/template.html` → `python3 scripts/build.py` → commit `site/` → deploy.
 Never hand-edit `site/index.html`.
@@ -47,7 +48,12 @@ Pages takes ~1 min to publish. Ask Andrés before every deploy.
 - The permission classifier blocks pushes/deploys for Claude; Andrés runs them with the `!` prefix.
 - QR labels: `qr/etiquetas-qr-bahiaviva.co.pdf` (15 labels, self-check passed). Reprint only if an id changes.
 
+## Audio (added 2026-10-27)
+- The students read each card's text aloud, so **card text and recordings must stay in sync**: don't reword a card that has a recording.
+- Recordings are served as separate files (`site/audio/`) and loaded when a card opens, not inlined, to keep QR page loads fast.
+- Cards without a recording (lancha, manglar_danado, basura) fall back to voice synthesis. To add one:
+  `ffmpeg -i in.ogg -ac 1 -ar 24000 -b:a 40k src/audio/<id>.mp3`, rebuild.
+- Originals live in `audios/` (gitignored) together with the sister's proposal .docx.
+
 ## Pending
-1. Before Oct 28: students' WhatsApp voice notes (one per card, they say the card number first) → add as audio
-   (e.g. `src/audio/<id>.m4a`, play instead of speechSynthesis when present). Keep file size reasonable (convert to ~48 kbps mono AAC/MP3).
-2. Hotspot positions for corales/arrecife/pez globo are best guesses (colored stones = corals); adjust x/y if the sister corrects them.
+1. Hotspot positions for corales/arrecife/pez globo are best guesses (colored stones = corals); adjust x/y if the sister corrects them.

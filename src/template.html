@@ -128,6 +128,7 @@ footer a { color: var(--an); overflow-wrap: anywhere; }
     <h1>Bahía del Pacífico Colombiano</h1>
     <span class="ribbon">Cuidemos la vida marina</span>
     <p class="lede">Toca un número en la foto de la maqueta para conocer a los animales y lo que pasa en cada zona.</p>
+    <button class="btn primary" id="h-say" hidden>🔊 Escuchar la bienvenida</button>
   </div>
 </header>
 
@@ -209,6 +210,7 @@ const ZONES = {
   z2: { label: 'Zona 2 · Práctica dañina', c: '--z2', soft: '--z2-soft' }
 };
 const IMG = {{IMGMAP}};
+const AUDIO = {{AUDIO}};  // card ids with a student recording in audio/<id>.mp3
 const STOPS = [
   { id: 'zona1', z: 'z1', title: 'Zona 1: Convivencia sostenible', short: 'Aquí cuidamos la bahía.',
     facts: ['Pescamos de forma artesanal y responsable.', 'Cuidamos los manglares.', 'Respetamos la vida marina.'],
@@ -320,6 +322,10 @@ function render() {
   $('#s-facts').innerHTML = s.facts.map((f) => `<li>${f}</li>`).join('');
   $('#s-care').textContent = s.care;
   $('#s-prev').disabled = cur === 0; $('#s-next').disabled = cur === STOPS.length - 1;
+  sayBtn.hidden = !(hasAudio(s.id) || synth);
+  sayBtn.dataset.label = hasAudio(s.id) ? '🔊 Escuchar a los niños' : '🔊 Escuchar';
+  sayBtn.textContent = sayBtn.dataset.label;
+  if (hasAudio(s.id)) { player.src = `audio/${s.id}.mp3`; }  // start buffering before they tap
   sheet.scrollTop = 0;
 }
 function open(i) { stopSpeech(); lastFocus = document.activeElement; cur = i; render(); overlay.hidden = false; $('#s-close').focus(); }
@@ -335,28 +341,60 @@ document.addEventListener('keydown', (e) => {
 $('#s-prev').addEventListener('click', () => { stopSpeech(); cur--; render(); });
 $('#s-next').addEventListener('click', () => { stopSpeech(); cur++; render(); });
 
-// read aloud in Spanish (placeholder until the students record their own voices)
+// read aloud: the students' own recordings (audio/<id>.mp3) when there is one, voice synthesis otherwise
 const synth = window.speechSynthesis;
-const sayBtn = $('#s-say');
+const sayBtn = $('#s-say'), homeBtn = $('#h-say');
+const hasAudio = (id) => AUDIO.includes(id);
+const player = new Audio();
+player.preload = 'auto';
+let playingBtn = null;
 let voice = null;
 function pickVoice() {
   if (!synth) return;
   const vs = synth.getVoices();
   voice = vs.find((v) => /^es[-_]CO/i.test(v.lang)) || vs.find((v) => /^es[-_](US|MX|419)/i.test(v.lang)) || vs.find((v) => /^es/i.test(v.lang)) || null;
 }
-if (synth) { pickVoice(); synth.onvoiceschanged = pickVoice; } else { sayBtn.hidden = true; }
-function stopSpeech() { try { synth && synth.cancel(); } catch (e) {} sayBtn.classList.remove('speaking'); sayBtn.textContent = '🔊 Escuchar'; }
-sayBtn.addEventListener('click', () => {
+if (synth) { pickVoice(); synth.onvoiceschanged = pickVoice; }
+function setIdle(btn) { if (!btn) return; btn.classList.remove('speaking'); btn.textContent = btn.dataset.label; }
+function stopSpeech() {
+  try { synth && synth.cancel(); } catch (e) {}
+  try { player.pause(); } catch (e) {}
+  setIdle(sayBtn); setIdle(homeBtn); playingBtn = null;
+}
+player.addEventListener('ended', () => stopSpeech());
+player.addEventListener('error', () => stopSpeech());
+function playFile(id, btn) {
+  player.src = `audio/${id}.mp3`;
+  player.currentTime = 0;
+  const p = player.play();
+  if (p && p.catch) p.catch(() => stopSpeech());
+  btn.classList.add('speaking'); btn.textContent = '■ Detener'; playingBtn = btn;
+}
+function speak(text, btn) {
   if (!synth) return;
-  if (sayBtn.classList.contains('speaking')) { stopSpeech(); return; }
-  const s = STOPS[cur];
-  const text = `${s.title}. ${s.short} ¿Sabías que? ${s.facts.join(' ')} ¿Cómo lo cuidamos? ${s.care}`;
   const u = new SpeechSynthesisUtterance(text);
   u.lang = voice ? voice.lang : 'es-CO'; if (voice) u.voice = voice; u.rate = 0.95;
-  u.onend = u.onerror = () => { sayBtn.classList.remove('speaking'); sayBtn.textContent = '🔊 Escuchar'; };
+  u.onend = u.onerror = () => stopSpeech();
   synth.cancel(); synth.speak(u);
-  sayBtn.classList.add('speaking'); sayBtn.textContent = '■ Detener';
+  btn.classList.add('speaking'); btn.textContent = '■ Detener'; playingBtn = btn;
+}
+sayBtn.dataset.label = sayBtn.textContent;
+sayBtn.addEventListener('click', () => {
+  if (playingBtn === sayBtn) { stopSpeech(); return; }
+  stopSpeech();
+  const s = STOPS[cur];
+  if (hasAudio(s.id)) { playFile(s.id, sayBtn); return; }
+  speak(`${s.title}. ${s.short} ¿Sabías que? ${s.facts.join(' ')} ¿Cómo lo cuidamos? ${s.care}`, sayBtn);
 });
+if (!synth && !AUDIO.length) sayBtn.hidden = true;
+homeBtn.dataset.label = homeBtn.textContent;
+if (hasAudio('inicio')) {
+  homeBtn.hidden = false;
+  homeBtn.addEventListener('click', () => {
+    if (playingBtn === homeBtn) { stopSpeech(); return; }
+    stopSpeech(); playFile('inicio', homeBtn);
+  });
+}
 
 // pledges
 const pl = $('#pledges');
