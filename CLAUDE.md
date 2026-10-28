@@ -51,7 +51,7 @@ Pages takes ~1 min to publish. Ask Andrés before every deploy.
 ## Audio (added 2026-10-27)
 - The students read each card's text aloud, so **card text and recordings must stay in sync**: don't reword a card that has a recording.
 - Recordings are served as separate files (`site/audio/`) and loaded when a card opens, not inlined, to keep QR page loads fast.
-- Cards without a recording (lancha, manglar_danado, basura) fall back to voice synthesis. To add one:
+- All 14 cards plus the welcome have a recording. A card without one falls back to voice synthesis. To add or replace one:
   `ffmpeg -i in.ogg -ac 1 -ar 24000 -b:a 40k src/audio/<id>.mp3`, rebuild.
 - Originals live in `audios/` (gitignored) together with the sister's proposal .docx.
 
